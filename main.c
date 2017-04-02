@@ -7,8 +7,8 @@
 
 #include <xmmintrin.h>
 
-#define TEST_W 4096
-#define TEST_H 4096
+#define TEST_W 1024
+#define TEST_H 1024
 
 /* provide the implementations of naive_transpose,
  * sse_transpose, sse_prefetch_transpose
@@ -30,24 +30,52 @@ static long diff_in_us(struct timespec t1, struct timespec t2)
 
 int main()
 {
-    /* verify the result of 4x4 matrix */
+   
     {
-       int test_src1[16] = { 0,  1,  2,  3,
-                              4,  5,  6,  7,
-                              8,  9, 10, 11,
-                              12, 13, 14, 15
+       
+
+       int test_src1[TEST_W];
+       int test_src2[TEST_H];
+       for(int w=0;w<TEST_W;w++)
+       {
+           test_src1[w]=rand();
+           test_src2[w]=rand();
+       }
+       int testout[TEST_H];
+       struct timespec start, end;
+       srand(time(NULL));
+
+
+
+        clock_gettime(CLOCK_REALTIME, &start);
+        naive_multiply(test_src1, test_src2, testout, 32, 32, 32, 32);
+ 	clock_gettime(CLOCK_REALTIME, &end);
+        
+        for (int y = 0; y <32 ; y++) {
+            for (int x = 0; x < 32; x++)
+                printf(" %2d", testout[y * 32 + x]);
+            printf("\n");
+        }
+	printf("naive: \t\t %ld us\n", diff_in_us(start, end));
+
+/*
+#if defined(vertify) 
+	 int test_src1[16] = { 0,  1,  2,  3,
+                               4,  5,  6,  7,
+                               8,  9, 10, 11,
+                               12, 13, 14, 15
                             };
-       int test_src2[16] = { 16, 17, 18, 19,
-                              20, 21, 22, 23,
-                              24, 25, 26, 27,
-                              28, 29, 30, 31
-                            };
-        int testout[16];
-        int expected[16] = { 152,  158,  164,  170,
-                             504,  526,  548,  570,
-                             856,  894,  932,  970,
-                             1208, 1262, 1316, 1370
-                           };
+         int test_src2[16] = { 16, 17, 18, 19,
+                               20, 21, 22, 23,
+                               24, 25, 26, 27,
+                               28, 29, 30, 31
+                             };
+         int testout[16];
+         int expected[16] = { 152,  158,  164,  170,
+                              504,  526,  548,  570,
+                              856,  894,  932,  970,
+                              1208, 1262, 1316, 1370
+                            };       
         for (int y = 0; y < 4; y++) {
             for (int x = 0; x < 4; x++)
                 printf(" %2d", test_src1[y * 4 + x]);
@@ -61,17 +89,16 @@ int main()
             printf("\n");
         }
         printf("\n");
-
-        naive_multiply(test_src1, test_src2, testout, 4, 4, 4, 4);
-
-        for (int y = 0; y < 4; y++) {
+        for (int y = 0; y <4 ; y++) {
             for (int x = 0; x < 4; x++)
                 printf(" %2d", testout[y * 4 + x]);
             printf("\n");
         }
 
-        assert(0 == memcmp(testout, expected, 16 * sizeof(int)) &&
-               "Verification fails");
+        assert(0 == memcmp(testout, expected, 16 * sizeof(int)) && "Verification fails");
+#endif
+*/
+       
     }
 
     return 0;
